@@ -19,25 +19,25 @@ void Drivetrain::Teleop(Drivetrain &driveTrain, Input &input, LimeLight &limelig
     if (input.xboxController.GetRightTriggerAxis() > 0) {
         if (limelight.targetFound == 1) {
             if (limelight.targetOffsetHorizontal < -3) {
-                driveTrain.differentialDrive.TankDrive(0.35, -0.35);
+                driveTrain.differentialDrive.TankDrive(0.5, -0.5);
             } else if (limelight.targetOffsetHorizontal > 3) { 
-                driveTrain.differentialDrive.TankDrive(-0.35, 0.35);
+                driveTrain.differentialDrive.TankDrive(-0.5, 0.5);
             } else {
                 driveTrain.differentialDrive.TankDrive(0, 0);
             }
         }
     } else if (input.xboxController.GetLeftTriggerAxis() >  0) {
-        driveTrain.differentialDrive.TankDrive(leftY * 0.4, rightY * 0.4);
+        driveTrain.differentialDrive.TankDrive(leftY * 0.5, rightY * 0.5);
     } else {
         double speedLeft;
         double speedRight;
 
         if ((leftY < 0 && rightY > 0) || (leftY > 0 && rightY < 0)) {
-            speedLeft = leftY * 0.65;
-            speedRight = rightY * 0.65;
-        } else {
             speedLeft = leftY * 0.9;
             speedRight = rightY * 0.9;
+        } else {
+            speedLeft = leftY;
+            speedRight = rightY;
         }
 
         driveTrain.differentialDrive.TankDrive(speedLeft, speedRight);
