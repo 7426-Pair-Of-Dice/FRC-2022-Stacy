@@ -63,7 +63,7 @@ class Robot : public frc::TimedRobot {
       m_chooser.AddOption("4-Ball", "4-Ball");
       frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
       
-      // frc::SmartDashboard::PutNumber("Shooter RPM", 320);
+      frc::SmartDashboard::PutNumber("Shooter RPM", 320);
     };
 
     void RobotPeriodic() override {

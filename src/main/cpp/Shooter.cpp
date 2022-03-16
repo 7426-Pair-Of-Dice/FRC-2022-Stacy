@@ -40,6 +40,7 @@ void Shooter::Teleop(Shooter &shooter, Input &input, LimeLight &limelight) {
     */
 
     double targetVelocity;
+    double shooterRPM = frc::SmartDashboard::GetNumber("Shooter RPM", 320);
 
     if (input.joystick.GetRawButton(8) && input.joystick.GetRawButton(1)) {
         
@@ -49,7 +50,7 @@ void Shooter::Teleop(Shooter &shooter, Input &input, LimeLight &limelight) {
         shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
 
     } else if (input.joystick.GetRawButton(1)) {
-        targetVelocity = Constant::flywheelTopGoalSpeed * 4096 / 600;
+        targetVelocity = shooterRPM * 4096 / 600;
 
         shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
         shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
