@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 #include <frc/motorcontrol/MotorControllerGroup.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/drive/DifferentialDrive.h>
@@ -32,5 +34,6 @@ class Drivetrain {
 
         void Init(Drivetrain &driveTrain);
         void Teleop(Drivetrain &driveTrain, Input &input, LimeLight &limelight);
+        bool InDeadzone(double input);
         void Disable();
 };

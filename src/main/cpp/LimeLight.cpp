@@ -17,21 +17,19 @@ void LimeLight::DisableLEDs() {
 }
 
 double LimeLight::GetDistanceFromTarget() {
-    /*
     if (targetFound == 1) {
         double a1 = targetOffsetVertical;
-        double a2 = Constant::limelightAngle
+        double a2 = Constant::limelightAngle;
 
         double goalangle_degrees = a1 + a2;
-        double goalangle_radians = (angle_in_degrees * 3.14) / 180;
+        double goalangle_radians = (goalangle_degrees * 3.14) / 180;
 
         double height = Constant::goalHeight - Constant::limelightHeight;
 
-        return (height / std::tan(angle_in_radians));
+        return (height / std::tan(goalangle_radians));
     } else {
         return 0;
     }
-    */
 }
 
 double LimeLight::GetFlywheelSpeedFromDistance(double distance) {

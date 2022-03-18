@@ -19,7 +19,7 @@ class Constant {
 
         static constexpr double goalHeight = 104;
         static constexpr double limelightHeight = 41;
-        static constexpr double limelightAngle = 13;
+        static constexpr double limelightAngle = 45;
 
         static constexpr frc::PneumaticsModuleType pneumaticModule = frc::PneumaticsModuleType::CTREPCM;
 };

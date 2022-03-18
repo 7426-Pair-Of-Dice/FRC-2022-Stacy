@@ -64,9 +64,12 @@ class Robot : public frc::TimedRobot {
       frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
       
       frc::SmartDashboard::PutNumber("Shooter RPM", 320);
+
     };
 
     void RobotPeriodic() override {
+      frc::SmartDashboard::PutNumber("Distance From Goal", limelight.GetDistanceFromTarget());
+
       limelight.UpdateLimelightValues();
     };
 
