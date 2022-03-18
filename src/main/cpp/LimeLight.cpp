@@ -32,10 +32,12 @@ double LimeLight::GetDistanceFromTarget() {
     }
 }
 
-double LimeLight::GetFlywheelSpeedFromDistance(double distance) {
+double LimeLight::GetFlywheelSpeedFromDistance() {
+    double distance = GetDistanceFromTarget();
+
     if (this->targetFound == 1) {
-        return 0.0000812102 * (distance * distance * distance) + 256.338;
+        return 2.85635 * distance + 147.214;
     } else {
-        return 370;
+        return 320;
     }
 }

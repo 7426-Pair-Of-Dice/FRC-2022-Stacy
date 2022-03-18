@@ -32,15 +32,8 @@ void Shooter::Init(Shooter &shooter) {
 }
 
 void Shooter::Teleop(Shooter &shooter, Input &input, LimeLight &limelight) {
-    /*
-    double distance = limelight.GetDistanceFromTarget();
-    double shooterRPM = limelight.GetFlywheelSpeedFromDistance(distance);
-
-    frc::SmartDashboard::PutNumber("Current Speed", shooterRPM);
-    */
-
     double targetVelocity;
-    double shooterRPM = frc::SmartDashboard::GetNumber("Shooter RPM", 320);
+    double shooterRPM = limelight.GetFlywheelSpeedFromDistance();
 
     if (input.joystick.GetRawButton(8) && input.joystick.GetRawButton(1)) {
         

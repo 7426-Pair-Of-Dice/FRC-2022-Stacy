@@ -16,39 +16,21 @@ void Drivetrain::Teleop(Drivetrain &driveTrain, Input &input, LimeLight &limelig
     double leftY = input.xboxController.GetLeftY();
     double rightY = -input.xboxController.GetRightX();
 
-    differentialDrive.ArcadeDrive(leftY, rightY);
-    /*
     if (input.xboxController.GetRightTriggerAxis() > 0) {
-        if (limelight.targetFound == 1) {
-            if (limelight.targetOffsetHorizontal < -3) {
-                driveTrain.differentialDrive.TankDrive(0.5, -0.5);
-            } else if (limelight.targetOffsetHorizontal > 3) { 
-                driveTrain.differentialDrive.TankDrive(-0.5, 0.5);
+       if (limelight.targetFound == 1) {
+            if (limelight.targetOffsetHorizontal < -5) {
+                driveTrain.differentialDrive.TankDrive(0.35, -0.35);
+            } else if (limelight.targetOffsetHorizontal > 5) { 
+                driveTrain.differentialDrive.TankDrive(-0.35, 0.35);
             } else {
                 driveTrain.differentialDrive.TankDrive(0, 0);
             }
-        }
-    } else if (input.xboxController.GetLeftTriggerAxis() >  0) {
-        driveTrain.differentialDrive.TankDrive(leftY * 0.5, rightY * 0.5);
+        } 
+    } else if (input.xboxController.GetLeftTriggerAxis() > 0) {
+        differentialDrive.ArcadeDrive(leftY * 0.5, rightY);
     } else {
-        double speedLeft;
-        double speedRight;
-
-        if ((leftY < 0 && rightY > 0) || (leftY > 0 && rightY < 0)) {
-            if ((leftY > -0.2 && rightY < 0.2) || (leftY < 0.2 && rightY > -0.2)) {
-                speedLeft = 0;
-                speedRight = 0;
-            }
-            speedLeft = leftY * 0.55;
-            speedRight = rightY * 0.55;
-        } else {
-            speedLeft = leftY;
-            speedRight = rightY;
-        }
-
-        driveTrain.differentialDrive.TankDrive(speedLeft, speedRight);
+        differentialDrive.ArcadeDrive(leftY, rightY);
     }
-    */
 }
 
 void Drivetrain::Disable() {

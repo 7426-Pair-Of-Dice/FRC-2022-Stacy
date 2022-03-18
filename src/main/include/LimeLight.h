@@ -22,6 +22,6 @@ class LimeLight {
         void EnableLEDs();
         void DisableLEDs();
         double GetDistanceFromTarget();
-        double GetFlywheelSpeedFromDistance(double distance);
+        double GetFlywheelSpeedFromDistance();
         
 };
