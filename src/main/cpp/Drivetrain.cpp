@@ -13,12 +13,9 @@ void Drivetrain::Init(Drivetrain &driveTrain) {
 }
 
 void Drivetrain::Teleop(Drivetrain &driveTrain, Input &input, LimeLight &limelight) {
-    double leftY = input.driveJoystick.GetY();
-    double rightx = -input.driveJoystick.GetX();
+    double leftY = input.xboxController.GetLeftY();
+    double rightY = -input.xboxController.GetRightX();
 
-    differentialDrive.ArcadeDrive(leftY, rightx);
-
-    /*
     if (input.xboxController.GetRightTriggerAxis() > 0) {
        if (limelight.targetFound == 1) {
             if (limelight.targetOffsetHorizontal < -5) {
@@ -34,7 +31,6 @@ void Drivetrain::Teleop(Drivetrain &driveTrain, Input &input, LimeLight &limelig
     } else {
         differentialDrive.ArcadeDrive(leftY, rightY);
     }
-    */
 }
 
 void Drivetrain::Disable() {

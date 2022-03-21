@@ -42,6 +42,7 @@ class Robot : public frc::TimedRobot {
     double autoPhase6Timer = 0.0;
     double autoPhase7Timer = 0.0;
     double autoPhase9Timer = 0.0;
+    double autoPhase10Timer = 0.0;
     double autoPhase13Timer = 0.0;
 
     frc::SendableChooser<std::string> m_chooser;
@@ -244,13 +245,59 @@ class Robot : public frc::TimedRobot {
       }
     };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     void Autonomous2() {
 
       double positionLeft = driveTrain.leftDriveEncoder.GetPosition();
       double positionRight = -driveTrain.rightDriveEncoder.GetPosition();
       
       if (!autoPhase1Complete) {
-        double driveSetPoint = 35;
+        double driveSetPoint = 25;//test number
 
         intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
 
@@ -276,7 +323,7 @@ class Robot : public frc::TimedRobot {
 
           autoPhase1Complete = true;
         }
-      }
+      } 
 
       if (autoPhase1Complete && !autoPhase2Complete) {
         autoPhase2Timer = autoPhase2Timer + 20;
@@ -312,7 +359,7 @@ class Robot : public frc::TimedRobot {
       }
 
       if (autoPhase3Complete && !autoPhase4Complete) {
-        double setPoint = 21;
+        double setPoint = 19.5; // Why do we die
 
         positionLeft = driveTrain.leftDriveEncoder.GetPosition();
         positionRight = driveTrain.rightDriveEncoder.GetPosition();
@@ -371,11 +418,11 @@ class Robot : public frc::TimedRobot {
 
           autoPhase6Complete = true;
         }
-      }
+      } // After Both Balls are shot
       
-      /*
+      // comment block start
       if (autoPhase6Complete && !autoPhase7Complete) {
-        double setPoint = 21;
+        double setPoint = 10;
 
         positionLeft = driveTrain.leftDriveEncoder.GetPosition();
         positionRight = driveTrain.rightDriveEncoder.GetPosition();
@@ -397,18 +444,15 @@ class Robot : public frc::TimedRobot {
       }
       
       if (autoPhase7Complete && !autoPhase8Complete) {
-        double driveSetPoint = 85.5;
+        double driveSetPoint = 57;
 
+        intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
+
+        intake.intakeMotor.Set(Constant::intakePercentSpeed);
+        intake.indexMotorR.Set(Constant::intakePercentSpeed);
+        intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+        
         if (positionLeft < driveSetPoint || positionRight < driveSetPoint) {
-
-          if (positionLeft > 70 || positionRight > 70) {
-            intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
-
-            intake.intakeMotor.Set(Constant::intakePercentSpeed);
-            intake.indexMotorR.Set(Constant::intakePercentSpeed);
-            intake.indexMotorL.Set(-Constant::intakePercentSpeed);
-          }
-
           if (positionLeft > positionRight) {
             driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed - Constant::autoStraight);
           } else if (positionRight > positionLeft) {
@@ -418,7 +462,12 @@ class Robot : public frc::TimedRobot {
           }
         } else {
           driveTrain.differentialDrive.TankDrive(0, 0);
-
+          
+          intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+          intake.intakeMotor.Set(0);
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
+          
           driveTrain.leftDriveEncoder.SetPosition(0);
           driveTrain.rightDriveEncoder.SetPosition(0);
 
@@ -426,59 +475,40 @@ class Robot : public frc::TimedRobot {
         }
       }
 
-      if (autoPhase8Complete && !autoPhase9Complete) {
-        autoPhase9Timer = autoPhase9Timer + 20;
+      // This is commented right now but it might be important!
+      // if (autoPhase8Complete && !autoPhase9Complete) {
+      //   autoPhase9Timer = autoPhase9Timer + 20;
 
-        if (autoPhase9Timer < 1000) {
-          intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+      //   if (autoPhase9Timer < 1000) {
+      //     intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
 
-          intake.intakeMotor.Set(Constant::intakePercentSpeed);
-          intake.indexMotorR.Set(Constant::intakePercentSpeed);
-          intake.indexMotorL.Set(-Constant::intakePercentSpeed);
-        } else if (autoPhase9Timer < 3000) { 
-          intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
+      //     intake.intakeMotor.Set(Constant::intakePercentSpeed);
+      //     intake.indexMotorR.Set(Constant::intakePercentSpeed);
+      //     intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+      //   } else if (autoPhase9Timer < 3000) { 
+      //     intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
 
-          intake.intakeMotor.Set(Constant::intakePercentSpeed);
-          intake.indexMotorR.Set(Constant::intakePercentSpeed);
-          intake.indexMotorL.Set(-Constant::intakePercentSpeed);
-        } else {
-          intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+      //     intake.intakeMotor.Set(Constant::intakePercentSpeed);
+      //     intake.indexMotorR.Set(Constant::intakePercentSpeed);
+      //     intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+      //   } else {
+      //     intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
 
-          intake.intakeMotor.Set(0);
-          intake.indexMotorR.Set(0);
-          intake.indexMotorL.Set(0);
+      //     intake.intakeMotor.Set(0);
+      //     intake.indexMotorR.Set(0);
+      //     intake.indexMotorL.Set(0);
 
-          driveTrain.leftDriveEncoder.SetPosition(0);
-          driveTrain.rightDriveEncoder.SetPosition(0);
+      //     driveTrain.leftDriveEncoder.SetPosition(0);
+      //     driveTrain.rightDriveEncoder.SetPosition(0);
 
-          autoPhase9Complete = true;
-        }
-      }
+      //     autoPhase9Complete = true;
+      //   }
+      // }
 
-      if (autoPhase9Complete && !autoPhase10Complete) {
-        double driveSetPoint = -85.5;
+      
 
-        if (positionLeft > driveSetPoint || positionRight > driveSetPoint) {
-
-          if (positionLeft < positionRight) {
-            driveTrain.differentialDrive.TankDrive(Constant::autoDriveSpeed, Constant::autoDriveSpeed + Constant::autoStraight);
-          } else if (positionRight < positionLeft) {
-            driveTrain.differentialDrive.TankDrive(Constant::autoDriveSpeed + Constant::autoStraight, Constant::autoDriveSpeed);
-          } else {
-            driveTrain.differentialDrive.TankDrive(Constant::autoDriveSpeed, Constant::autoDriveSpeed);
-          }
-        } else {
-          driveTrain.differentialDrive.TankDrive(0, 0);
-
-          driveTrain.leftDriveEncoder.SetPosition(0);
-          driveTrain.rightDriveEncoder.SetPosition(0);
-
-          autoPhase10Complete = true;
-        }
-      }
-
-      if (autoPhase10Complete && !autoPhase11Complete) {
-        double setPoint = -22;
+      if (autoPhase8Complete && !autoPhase9Complete) { //Phase 10
+        double setPoint = 17;
 
         positionLeft = driveTrain.leftDriveEncoder.GetPosition();
         positionRight = driveTrain.rightDriveEncoder.GetPosition();
@@ -491,43 +521,23 @@ class Robot : public frc::TimedRobot {
         } else {
           driveTrain.differentialDrive.TankDrive(0, 0);
 
-          autoPhase11Complete = true;
+          // driveTrain.leftDriveEncoder.SetPosition(0);
+          // driveTrain.rightDriveEncoder.SetPosition(0);
+
+          autoPhase9Complete = true;
         }
       }
 
-      if (autoPhase11Complete && !autoPhase12Complete) {
+      if (autoPhase9Complete && !autoPhase10Complete) {
+        autoPhase10Timer = autoPhase10Timer + 20;
 
-        autoPhase12Complete = true;
-
-        
-        if (limelight.targetFound == 1) {
-            if (limelight.targetOffsetHorizontal < -5) {
-                driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
-            } else if (limelight.targetOffsetHorizontal > 5) {
-                driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
-            } else {
-              driveTrain.differentialDrive.TankDrive(0, 0);
-
-              autoPhase12Complete = true;
-            }
-        } else {
-          driveTrain.differentialDrive.TankDrive(0, 0);
-
-          autoPhase12Complete = true;
-        }
-        
-      }
-
-      if (autoPhase12Complete && !autoPhase13Complete) {
-        autoPhase13Timer = autoPhase13Timer + 20;
-
-        if (autoPhase13Timer < 1000) {
-          double shooterRPM = 320;
-          double targetVelocity = shooterRPM * 4096 / 600;
+        if (autoPhase10Timer < 1000) {
+          double shooterRPM = 323;
+          double targetVelocity = Constant::auto4BallFlywheelSpeed * 4096 / 600;
 
           shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
           shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
-        } else if (autoPhase6Timer < 5000) {
+        } else if (autoPhase10Timer < 3000) {
           intake.indexMotorR.Set(Constant::intakePercentSpeed);
           intake.indexMotorL.Set(Constant::intakePercentSpeed);
         } else {
@@ -539,15 +549,368 @@ class Robot : public frc::TimedRobot {
           driveTrain.leftDriveEncoder.SetPosition(0);
           driveTrain.rightDriveEncoder.SetPosition(0);
 
-          autoPhase13Complete = true;
+          autoPhase10Complete = true;
         }
       }
-      */
 
-      if (autoPhase6Complete) {
+      // if (autoPhase11Complete && !autoPhase12Complete) {
+
+      //   autoPhase12Complete = true;
+
+        
+      //   if (limelight.targetFound == 1) {
+      //       if (limelight.targetOffsetHorizontal < -5) {
+      //           driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
+      //       } else if (limelight.targetOffsetHorizontal > 5) {
+      //           driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
+      //       } else {
+      //         driveTrain.differentialDrive.TankDrive(0, 0);
+
+      //         autoPhase12Complete = true;
+      //       }
+      //   } else {
+      //     driveTrain.differentialDrive.TankDrive(0, 0);
+
+      //     autoPhase12Complete = true;
+      //   }
+        
+      // }
+
+      // if (autoPhase12Complete && !autoPhase13Complete) {
+      //   autoPhase13Timer = autoPhase13Timer + 20;
+
+      //   if (autoPhase13Timer < 1000) {
+      //     double shooterRPM = 320;
+      //     double targetVelocity = shooterRPM * 4096 / 600;
+
+      //     shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
+      //     shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
+      //   } else if (autoPhase6Timer < 5000) {
+      //     intake.indexMotorR.Set(Constant::intakePercentSpeed);
+      //     intake.indexMotorL.Set(Constant::intakePercentSpeed);
+      //   } else {
+      //     intake.indexMotorR.Set(0);
+      //     intake.indexMotorL.Set(0);
+      //     shooter.shooterMotorL.Set(ControlMode::PercentOutput, 0);
+      //     shooter.shooterMotorR.Set(ControlMode::PercentOutput, 0);
+
+      //     driveTrain.leftDriveEncoder.SetPosition(0);
+      //     driveTrain.rightDriveEncoder.SetPosition(0);
+
+      //     autoPhase13Complete = true;
+      //   }
+      // }
+      //comment block end
+
+      if (autoPhase10Complete) { // This is dangerous
         driveTrain.differentialDrive.TankDrive(0, 0);
       }
     }
+
+    // void Autonomous2() {
+
+    //   double positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+    //   double positionRight = -driveTrain.rightDriveEncoder.GetPosition();
+      
+    //   if (!autoPhase1Complete) {
+    //     double driveSetPoint = 35;
+
+    //     intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
+
+    //     intake.intakeMotor.Set(Constant::intakePercentSpeed);
+    //     intake.indexMotorR.Set(Constant::intakePercentSpeed);
+    //     intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+        
+    //     if (positionLeft < driveSetPoint || positionRight < driveSetPoint) {
+    //       if (positionLeft > positionRight) {
+    //         driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed - Constant::autoStraight);
+    //       } else if (positionRight > positionLeft) {
+    //         driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed - Constant::autoStraight, -Constant::autoDriveSpeed);
+    //       } else {
+    //         driveTrain.differentialDrive.TankDrive(-0.3, -0.3);
+    //       }
+    //     } else {
+    //       driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //       intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+    //       intake.intakeMotor.Set(0);
+    //       intake.indexMotorR.Set(0);
+    //       intake.indexMotorL.Set(0);
+
+    //       autoPhase1Complete = true;
+    //     }
+    //   } 
+
+    //   if (autoPhase1Complete && !autoPhase2Complete) {
+    //     autoPhase2Timer = autoPhase2Timer + 20;
+
+    //     if (autoPhase2Timer < 600) {
+    //       intake.intakeMotor.Set(Constant::intakePercentSpeed);
+    //       intake.indexMotorR.Set(Constant::intakePercentSpeed);
+    //       intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+    //     } else {
+    //       intake.intakeMotor.Set(0);
+    //       intake.indexMotorR.Set(0);
+    //       intake.indexMotorL.Set(0);
+
+    //       autoPhase2Complete = true;
+    //     }
+    //   }
+
+    //   if (autoPhase2Complete && !autoPhase3Complete) {
+    //     autoPhase3Timer = autoPhase3Timer + 20;
+
+    //     if (autoPhase3Timer < 100) {
+    //       intake.indexMotorR.Set(-Constant::intakePercentSpeed);
+    //       intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+    //     } else {
+    //       intake.indexMotorR.Set(0);
+    //       intake.indexMotorL.Set(0);
+
+    //       driveTrain.leftDriveEncoder.SetPosition(0);
+    //       driveTrain.rightDriveEncoder.SetPosition(0);
+
+    //       autoPhase3Complete = true;
+    //     }
+    //   }
+
+    //   if (autoPhase3Complete && !autoPhase4Complete) {
+    //     double setPoint = 21;
+
+    //     positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+    //     positionRight = driveTrain.rightDriveEncoder.GetPosition();
+
+    //     if (positionLeft < setPoint || positionRight < -setPoint) {
+    //       positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+    //       positionRight = driveTrain.rightDriveEncoder.GetPosition();
+
+    //       driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
+    //     } else {
+    //       driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //       autoPhase4Complete = true;
+    //     }
+    //   }
+
+    //   if (autoPhase4Complete && !autoPhase5Complete) {
+    //     if (limelight.targetFound == 1) {
+    //         if (limelight.targetOffsetHorizontal < -5) {
+    //             driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
+    //         } else if (limelight.targetOffsetHorizontal > 5) {
+    //             driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
+    //         } else {
+    //           driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //           autoPhase5Complete = true;
+    //         }
+    //     } else {
+    //       driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //       autoPhase5Complete = true;
+    //     }
+    //   }
+
+      
+    //   if (autoPhase5Complete && !autoPhase6Complete) {
+    //     autoPhase6Timer = autoPhase6Timer + 20;
+
+    //     if (autoPhase6Timer < 1000) {
+    //       double shooterRPM = 323;
+    //       double targetVelocity = Constant::auto4BallFlywheelSpeed * 4096 / 600;
+
+    //       shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
+    //       shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
+    //     } else if (autoPhase6Timer < 3000) {
+    //       intake.indexMotorR.Set(Constant::intakePercentSpeed);
+    //       intake.indexMotorL.Set(Constant::intakePercentSpeed);
+    //     } else {
+    //       intake.indexMotorR.Set(0);
+    //       intake.indexMotorL.Set(0);
+    //       shooter.shooterMotorL.Set(ControlMode::PercentOutput, 0);
+    //       shooter.shooterMotorR.Set(ControlMode::PercentOutput, 0);
+
+    //       driveTrain.leftDriveEncoder.SetPosition(0);
+    //       driveTrain.rightDriveEncoder.SetPosition(0);
+
+    //       autoPhase6Complete = true;
+    //     }
+    //   } // After Both Balls are shot
+      
+    //   // comment block start
+    //   if (autoPhase6Complete && !autoPhase7Complete) {
+    //     double setPoint = 21;
+
+    //     positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+    //     positionRight = driveTrain.rightDriveEncoder.GetPosition();
+
+    //     if (positionLeft > setPoint || positionRight > -setPoint) {
+    //       positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+    //       positionRight = driveTrain.rightDriveEncoder.GetPosition();
+
+    //       driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
+    //     } else {
+    //       driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //       driveTrain.leftDriveEncoder.SetPosition(0);
+    //       driveTrain.rightDriveEncoder.SetPosition(0);
+
+    //       autoPhase7Complete = true;
+    //     }
+        
+    //   }
+      
+    //   if (autoPhase7Complete && !autoPhase8Complete) {
+    //     double driveSetPoint = 85.5;
+
+    //     if (positionLeft < driveSetPoint || positionRight < driveSetPoint) {
+
+    //       if (positionLeft > 70 || positionRight > 70) {
+    //         intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
+
+    //         intake.intakeMotor.Set(Constant::intakePercentSpeed);
+    //         intake.indexMotorR.Set(Constant::intakePercentSpeed);
+    //         intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+    //       }
+
+    //       if (positionLeft > positionRight) {
+    //         driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed - Constant::autoStraight);
+    //       } else if (positionRight > positionLeft) {
+    //         driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed - Constant::autoStraight, -Constant::autoDriveSpeed);
+    //       } else {
+    //         driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed);
+    //       }
+    //     } else {
+    //       driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //       driveTrain.leftDriveEncoder.SetPosition(0);
+    //       driveTrain.rightDriveEncoder.SetPosition(0);
+
+    //       autoPhase8Complete = true;
+    //     }
+    //   }
+
+    //   if (autoPhase8Complete && !autoPhase9Complete) {
+    //     autoPhase9Timer = autoPhase9Timer + 20;
+
+    //     if (autoPhase9Timer < 1000) {
+    //       intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+
+    //       intake.intakeMotor.Set(Constant::intakePercentSpeed);
+    //       intake.indexMotorR.Set(Constant::intakePercentSpeed);
+    //       intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+    //     } else if (autoPhase9Timer < 3000) { 
+    //       intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
+
+    //       intake.intakeMotor.Set(Constant::intakePercentSpeed);
+    //       intake.indexMotorR.Set(Constant::intakePercentSpeed);
+    //       intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+    //     } else {
+    //       intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+
+    //       intake.intakeMotor.Set(0);
+    //       intake.indexMotorR.Set(0);
+    //       intake.indexMotorL.Set(0);
+
+    //       driveTrain.leftDriveEncoder.SetPosition(0);
+    //       driveTrain.rightDriveEncoder.SetPosition(0);
+
+    //       autoPhase9Complete = true;
+    //     }
+    //   }
+
+    //   if (autoPhase9Complete && !autoPhase10Complete) {
+    //     double driveSetPoint = -85.5;
+
+    //     if (positionLeft > driveSetPoint || positionRight > driveSetPoint) {
+
+    //       if (positionLeft < positionRight) {
+    //         driveTrain.differentialDrive.TankDrive(Constant::autoDriveSpeed, Constant::autoDriveSpeed + Constant::autoStraight);
+    //       } else if (positionRight < positionLeft) {
+    //         driveTrain.differentialDrive.TankDrive(Constant::autoDriveSpeed + Constant::autoStraight, Constant::autoDriveSpeed);
+    //       } else {
+    //         driveTrain.differentialDrive.TankDrive(Constant::autoDriveSpeed, Constant::autoDriveSpeed);
+    //       }
+    //     } else {
+    //       driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //       driveTrain.leftDriveEncoder.SetPosition(0);
+    //       driveTrain.rightDriveEncoder.SetPosition(0);
+
+    //       autoPhase10Complete = true;
+    //     }
+    //   }
+
+    //   if (autoPhase10Complete && !autoPhase11Complete) {
+    //     double setPoint = -22;
+
+    //     positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+    //     positionRight = driveTrain.rightDriveEncoder.GetPosition();
+
+    //     if (positionLeft < setPoint || positionRight < -setPoint) {
+    //       positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+    //       positionRight = driveTrain.rightDriveEncoder.GetPosition();
+
+    //       driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
+    //     } else {
+    //       driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //       autoPhase11Complete = true;
+    //     }
+    //   }
+
+    //   if (autoPhase11Complete && !autoPhase12Complete) {
+
+    //     autoPhase12Complete = true;
+
+        
+    //     if (limelight.targetFound == 1) {
+    //         if (limelight.targetOffsetHorizontal < -5) {
+    //             driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
+    //         } else if (limelight.targetOffsetHorizontal > 5) {
+    //             driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
+    //         } else {
+    //           driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //           autoPhase12Complete = true;
+    //         }
+    //     } else {
+    //       driveTrain.differentialDrive.TankDrive(0, 0);
+
+    //       autoPhase12Complete = true;
+    //     }
+        
+    //   }
+
+    //   if (autoPhase12Complete && !autoPhase13Complete) {
+    //     autoPhase13Timer = autoPhase13Timer + 20;
+
+    //     if (autoPhase13Timer < 1000) {
+    //       double shooterRPM = 320;
+    //       double targetVelocity = shooterRPM * 4096 / 600;
+
+    //       shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
+    //       shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
+    //     } else if (autoPhase6Timer < 5000) {
+    //       intake.indexMotorR.Set(Constant::intakePercentSpeed);
+    //       intake.indexMotorL.Set(Constant::intakePercentSpeed);
+    //     } else {
+    //       intake.indexMotorR.Set(0);
+    //       intake.indexMotorL.Set(0);
+    //       shooter.shooterMotorL.Set(ControlMode::PercentOutput, 0);
+    //       shooter.shooterMotorR.Set(ControlMode::PercentOutput, 0);
+
+    //       driveTrain.leftDriveEncoder.SetPosition(0);
+    //       driveTrain.rightDriveEncoder.SetPosition(0);
+
+    //       autoPhase13Complete = true;
+    //     }
+    //   }
+    //   //comment block end
+
+    //   if (autoPhase13Complete) { // This is dangerous
+    //     driveTrain.differentialDrive.TankDrive(0, 0);
+    //   }
+    // }
 
     void ResetAutonomous() {
       autoPhase1Complete = false;
@@ -569,6 +932,7 @@ class Robot : public frc::TimedRobot {
       autoPhase6Timer = 0.0;
       autoPhase7Timer = 0.0;
       autoPhase9Timer = 0.0;
+      autoPhase10Timer = 0.0;
       autoPhase13Timer = 0.0;
 
       driveTrain.leftDriveEncoder.SetPosition(0);

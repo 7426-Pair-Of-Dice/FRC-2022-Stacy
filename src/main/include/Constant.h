@@ -10,8 +10,8 @@ class Constant {
         static constexpr double flywheelTopGoalSpeed = 305;
         static constexpr double flywheelBottomGoalSpeed = 128;
 
-        static constexpr double autoDriveSpeed = 0.495;
-        static constexpr double autoTurnSpeed = 0.405;
+        static constexpr double autoDriveSpeed = 0.55;
+        static constexpr double autoTurnSpeed = 0.47;
         static constexpr double autoStraight = 0.08;
 
         static constexpr double auto2BallFlywheelSpeed = 305;
