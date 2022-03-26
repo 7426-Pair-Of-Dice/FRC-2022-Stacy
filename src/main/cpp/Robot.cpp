@@ -49,6 +49,7 @@ class Robot : public frc::TimedRobot {
     double autoPhase7Timer = 0.0;
     double autoPhase9Timer = 0.0;
     double autoPhase10Timer = 0.0;
+    double autoPhase11Timer = 0.0;
     double autoPhase13Timer = 0.0;
 
     frc::SendableChooser<std::string> m_chooser;
@@ -70,7 +71,8 @@ class Robot : public frc::TimedRobot {
       m_chooser.SetDefaultOption("2-Ball", "2-Ball");
       m_chooser.AddOption("3-Ball", "3-Ball");
       m_chooser.AddOption("4-Ball", "4-Ball");
-      m_chooser.AddOption("Test", "Test");
+      m_chooser.AddOption("Gyro Test", "Gyro Test");
+      m_chooser.AddOption("Straight Test", "Straight Test");
       frc::SmartDashboard::PutData("Auto Modes", &m_chooser);
       
       frc::SmartDashboard::PutNumber("Shooter RPM", 320);
@@ -99,9 +101,10 @@ class Robot : public frc::TimedRobot {
     void AutonomousPeriodic() override {
       if (m_autoSelected == "2-Ball") { Autonomous1(); }
       else if (m_autoSelected == "3-Ball") { Autonomous2(); }
-      else if (m_autoSelected == "4-Ball") { Autonomous3(); }
-      else if (m_autoSelected == "Test") { AutonomousTest(); }
-      else { AutonomousTest(); }
+      else if (m_autoSelected == "4-Ball") { Autonomous4(); }
+      else if (m_autoSelected == "Gyro Test") { AutonomousGyroTest(); }
+      else if (m_autoSelected == "Straight Test") { AutonomousStraightTest(); }
+      else { AutonomousGyroTest(); }
     };
 
     void TeleopInit() override {
@@ -129,7 +132,46 @@ class Robot : public frc::TimedRobot {
 
     void TestPeriodic() override {};
 
-    void AutonomousTest() {
+    void AutonomousStraightTest() {
+
+      double positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+      double positionRight = -driveTrain.rightDriveEncoder.GetPosition();
+
+      if (!autoPhase1Complete) {
+        mainGyro.Reset();
+        autoPhase1Complete = true;
+      }
+      
+      if (autoPhase1Complete && !autoPhase2Complete) {
+        double driveSetPoint = 57;
+
+        double deadZone = 0.5;
+        double speedIncrement = abs(mainGyro.GetAngle())*0.025;
+
+        if (positionLeft < driveSetPoint || positionRight < driveSetPoint) {
+          if (mainGyro.GetAngle() > deadZone) { // Too Far Right
+            driveTrain.differentialDrive.TankDrive(-(Constant::autoDriveSpeed + 0.02), -(Constant::autoDriveSpeed + speedIncrement));
+          } else if (mainGyro.GetAngle() < -deadZone) { // Too Far Left
+            driveTrain.differentialDrive.TankDrive(-(Constant::autoDriveSpeed + speedIncrement), -Constant::autoDriveSpeed);
+          } else { // Just Right
+            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed);
+          }
+        } else {
+          driveTrain.differentialDrive.TankDrive(0, 0);
+          
+          driveTrain.leftDriveEncoder.SetPosition(0);
+          driveTrain.rightDriveEncoder.SetPosition(0);
+
+          autoPhase2Complete = true;
+        }
+      }
+
+      if (autoPhase2Complete) {
+        driveTrain.differentialDrive.TankDrive(0, 0);
+      }
+    }
+
+    void AutonomousGyroTest() {
       if(!autoPhase1Complete) {
         mainGyro.Reset();
         autoPhase1Complete = true;
@@ -312,9 +354,15 @@ class Robot : public frc::TimedRobot {
 
       double positionLeft = driveTrain.leftDriveEncoder.GetPosition();
       double positionRight = -driveTrain.rightDriveEncoder.GetPosition();
-      
+
+      /*
+        Auto Phase 1
+        Moves robot forward to a set point.
+        Moves towards first ball.
+      */
       if (!autoPhase1Complete) {
-        double driveSetPoint = 25;
+        double driveSetPoint = 24;
+        double speedIncrement = abs(mainGyro.GetAngle())*0.025;
 
         intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
 
@@ -323,12 +371,12 @@ class Robot : public frc::TimedRobot {
         intake.indexMotorL.Set(-Constant::intakePercentSpeed);
         
         if (positionLeft < driveSetPoint || positionRight < driveSetPoint) {
-          if (positionLeft > positionRight) {
-            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed - Constant::autoStraight);
-          } else if (positionRight > positionLeft) {
-            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed - Constant::autoStraight, -Constant::autoDriveSpeed);
-          } else {
-            driveTrain.differentialDrive.TankDrive(-0.3, -0.3);
+          if (mainGyro.GetAngle() > Constant::autoStraightDeadzone) { // Too Far Right
+            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -(Constant::autoDriveSpeed + speedIncrement));
+          } else if (mainGyro.GetAngle() < -Constant::autoStraightDeadzone) { // Too Far Left
+            driveTrain.differentialDrive.TankDrive(-(Constant::autoDriveSpeed + speedIncrement), -Constant::autoDriveSpeed);
+          } else { // Just Right
+            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed);
           }
         } else {
           driveTrain.differentialDrive.TankDrive(0, 0);
@@ -343,6 +391,11 @@ class Robot : public frc::TimedRobot {
         }
       } 
 
+      /*
+        Auto Phase 2
+        Runs intake motor and index motors.
+        Pulls ball in.
+      */
       if (autoPhase1Complete && !autoPhase2Complete) {
         autoPhase2Timer = autoPhase2Timer + 20;
 
@@ -354,11 +407,17 @@ class Robot : public frc::TimedRobot {
           intake.intakeMotor.Set(0);
           intake.indexMotorR.Set(0);
           intake.indexMotorL.Set(0);
+          mainGyro.Reset();
 
           autoPhase2Complete = true;
         }
       }
 
+      /*
+        Auto Phase 3
+        Runs index motors.
+        Indexes ball further.
+      */
       if (autoPhase2Complete && !autoPhase3Complete) {
         autoPhase3Timer = autoPhase3Timer + 20;
 
@@ -371,15 +430,21 @@ class Robot : public frc::TimedRobot {
 
           driveTrain.leftDriveEncoder.SetPosition(0);
           driveTrain.rightDriveEncoder.SetPosition(0);
+          mainGyro.Reset();
 
           autoPhase3Complete = true;
         }
       }
 
+      /*
+        Auto Phase 4
+        Turns robot X degrees to the right.
+        Turns robot towards goal.
+      */
       if (autoPhase3Complete && !autoPhase4Complete) {
-        double degrees = -4.3; // Why do we die
+        double degrees = 179; // Why do we die
 
-        if (mainGyro.GetAngle() > degrees) {
+        if (mainGyro.GetAngle() < degrees) {
           driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
         } else {
           driveTrain.differentialDrive.TankDrive(0, 0);
@@ -389,6 +454,11 @@ class Robot : public frc::TimedRobot {
         }
       }
 
+      /*
+        Auto Phase 5
+        Turns to focus limelight.
+        DISABLED
+      */
       if (autoPhase4Complete && !autoPhase5Complete) {
         if (limelight.targetFound == 1) {
             if (limelight.targetOffsetHorizontal < -5) {
@@ -402,12 +472,17 @@ class Robot : public frc::TimedRobot {
             }
         } else {
           driveTrain.differentialDrive.TankDrive(0, 0);
+          mainGyro.Reset();
 
           autoPhase5Complete = true;
         }
       }
 
-      
+      /*
+        Auto Phase 6
+        Shoots ball at X RPM.
+        Shoot two balls into the goal.
+      */
       if (autoPhase5Complete && !autoPhase6Complete) {
         autoPhase6Timer = autoPhase6Timer + 20;
 
@@ -428,27 +503,38 @@ class Robot : public frc::TimedRobot {
 
           driveTrain.leftDriveEncoder.SetPosition(0);
           driveTrain.rightDriveEncoder.SetPosition(0);
+          mainGyro.Reset();
 
           autoPhase6Complete = true;
         }
-      } // After Both Balls are shot
+      }
       
-      // comment block start
+      /*
+        Auto Phase 7
+        Turns robot X degrees to the left.
+        Turns robot towards second ball.
+      */
       if (autoPhase6Complete && !autoPhase7Complete) {
-        double degrees = 0.33; // Why do we die
+        double degrees = -65; // Why do we die
 
-        if (mainGyro.GetAngle() < degrees) {
+        if (mainGyro.GetAngle() > degrees) {
           driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
         } else {
           driveTrain.differentialDrive.TankDrive(0, 0);
-          autoPhase7Complete = true;
           mainGyro.Reset();
+          autoPhase7Complete = true;
         }
         
       }
       
+      /*
+        Auto Phase 8
+        Moves robot forward to a set point.
+        Moves towards second ball.
+      */
       if (autoPhase7Complete && !autoPhase8Complete) {
-        double driveSetPoint = 57;
+        double driveSetPoint = 57.1;
+        double speedIncrement = abs(mainGyro.GetAngle())*0.015;
 
         intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
 
@@ -457,11 +543,11 @@ class Robot : public frc::TimedRobot {
         intake.indexMotorL.Set(-Constant::intakePercentSpeed);
         
         if (positionLeft < driveSetPoint || positionRight < driveSetPoint) {
-          if (positionLeft > positionRight) {
-            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed - Constant::autoStraight);
-          } else if (positionRight > positionLeft) {
-            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed - Constant::autoStraight, -Constant::autoDriveSpeed);
-          } else {
+          if (mainGyro.GetAngle() > Constant::autoStraightDeadzone) { // Too Far Right
+            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -(Constant::autoDriveSpeed + speedIncrement));
+          } else if (mainGyro.GetAngle() < -Constant::autoStraightDeadzone) { // Too Far Left
+            driveTrain.differentialDrive.TankDrive(-(Constant::autoDriveSpeed + speedIncrement), -Constant::autoDriveSpeed);
+          } else { // Just Right
             driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed);
           }
         } else {
@@ -479,60 +565,61 @@ class Robot : public frc::TimedRobot {
         }
       }
 
-      // This is commented right now but it might be important!
-      // if (autoPhase8Complete && !autoPhase9Complete) {
-      //   autoPhase9Timer = autoPhase9Timer + 20;
+      /*
+        Auto Phase 9
+        Runs index motors.
+        Indexes ball further.
+      */
+      if (autoPhase8Complete && !autoPhase9Complete) {
+        autoPhase3Timer = autoPhase3Timer + 20;
 
-      //   if (autoPhase9Timer < 1000) {
-      //     intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+        if (autoPhase3Timer < 100) {
+          intake.indexMotorR.Set(-Constant::intakePercentSpeed);
+          intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+        } else {
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
 
-      //     intake.intakeMotor.Set(Constant::intakePercentSpeed);
-      //     intake.indexMotorR.Set(Constant::intakePercentSpeed);
-      //     intake.indexMotorL.Set(-Constant::intakePercentSpeed);
-      //   } else if (autoPhase9Timer < 3000) { 
-      //     intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
+          driveTrain.leftDriveEncoder.SetPosition(0);
+          driveTrain.rightDriveEncoder.SetPosition(0);
+          mainGyro.Reset();
 
-      //     intake.intakeMotor.Set(Constant::intakePercentSpeed);
-      //     intake.indexMotorR.Set(Constant::intakePercentSpeed);
-      //     intake.indexMotorL.Set(-Constant::intakePercentSpeed);
-      //   } else {
-      //     intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+          autoPhase9Complete = true;
+        }
+      }
 
-      //     intake.intakeMotor.Set(0);
-      //     intake.indexMotorR.Set(0);
-      //     intake.indexMotorL.Set(0);
+      /*
+        Auto Phase 10
+        Turns robot X degrees to the right.
+        Turns robot towards goal.
+      */
+      if (autoPhase9Complete && !autoPhase10Complete) { //Phase 9
+        double degrees = 98; // Why do we die
 
-      //     driveTrain.leftDriveEncoder.SetPosition(0);
-      //     driveTrain.rightDriveEncoder.SetPosition(0);
-
-      //     autoPhase9Complete = true;
-      //   }
-      // }
-
-      
-
-      if (autoPhase8Complete && !autoPhase9Complete) { //Phase 9
-        double degrees = -1; // Why do we die
-
-        if (mainGyro.GetAngle() > degrees) {
+        if (mainGyro.GetAngle() < degrees) {
           driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
         } else {
           driveTrain.differentialDrive.TankDrive(0, 0);
-          autoPhase9Complete = true;
+          autoPhase10Complete = true;
           mainGyro.Reset();
         }
       }
 
-      if (autoPhase9Complete && !autoPhase10Complete) {
-        autoPhase10Timer = autoPhase10Timer + 20;
+      /*
+        Auto Phase 11
+        Shoots ball at X RPM.
+        Shoot one ball into the goal.
+      */
+      if (autoPhase10Complete && !autoPhase11Complete) {
+        autoPhase11Timer = autoPhase11Timer + 20;
 
-        if (autoPhase10Timer < 1000) {
-          double shooterRPM = 323;
+        if (autoPhase11Timer < 1000) {
+          double shooterRPM = 328;
           double targetVelocity = Constant::auto4BallFlywheelSpeed * 4096 / 600;
 
           shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
           shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
-        } else if (autoPhase10Timer < 3000) {
+        } else if (autoPhase11Timer < 3000) {
           intake.indexMotorR.Set(Constant::intakePercentSpeed);
           intake.indexMotorL.Set(Constant::intakePercentSpeed);
         } else {
@@ -544,60 +631,12 @@ class Robot : public frc::TimedRobot {
           driveTrain.leftDriveEncoder.SetPosition(0);
           driveTrain.rightDriveEncoder.SetPosition(0);
 
-          autoPhase10Complete = true;
+          autoPhase11Complete = true;
         }
       }
 
-      // if (autoPhase11Complete && !autoPhase12Complete) {
-
-      //   autoPhase12Complete = true;
-
-        
-      //   if (limelight.targetFound == 1) {
-      //       if (limelight.targetOffsetHorizontal < -5) {
-      //           driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
-      //       } else if (limelight.targetOffsetHorizontal > 5) {
-      //           driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
-      //       } else {
-      //         driveTrain.differentialDrive.TankDrive(0, 0);
-
-      //         autoPhase12Complete = true;
-      //       }
-      //   } else {
-      //     driveTrain.differentialDrive.TankDrive(0, 0);
-
-      //     autoPhase12Complete = true;
-      //   }
-        
-      // }
-
-      // if (autoPhase12Complete && !autoPhase13Complete) {
-      //   autoPhase13Timer = autoPhase13Timer + 20;
-
-      //   if (autoPhase13Timer < 1000) {
-      //     double shooterRPM = 320;
-      //     double targetVelocity = shooterRPM * 4096 / 600;
-
-      //     shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
-      //     shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
-      //   } else if (autoPhase6Timer < 5000) {
-      //     intake.indexMotorR.Set(Constant::intakePercentSpeed);
-      //     intake.indexMotorL.Set(Constant::intakePercentSpeed);
-      //   } else {
-      //     intake.indexMotorR.Set(0);
-      //     intake.indexMotorL.Set(0);
-      //     shooter.shooterMotorL.Set(ControlMode::PercentOutput, 0);
-      //     shooter.shooterMotorR.Set(ControlMode::PercentOutput, 0);
-
-      //     driveTrain.leftDriveEncoder.SetPosition(0);
-      //     driveTrain.rightDriveEncoder.SetPosition(0);
-
-      //     autoPhase13Complete = true;
-      //   }
-      // }
-      //comment block end
-
-      if (autoPhase10Complete) { // This is dangerous
+      // Autonomous Complete
+      if (autoPhase11Complete) {
         driveTrain.differentialDrive.TankDrive(0, 0);
       }
     }
@@ -907,6 +946,297 @@ class Robot : public frc::TimedRobot {
       }
     }
 
+    void Autonomous4() {
+
+      double positionLeft = driveTrain.leftDriveEncoder.GetPosition();
+      double positionRight = -driveTrain.rightDriveEncoder.GetPosition();
+
+      /*
+        Auto Phase 1
+        Moves robot forward to a set point.
+        Moves towards first ball.
+      */
+      if (!autoPhase1Complete) {
+        double driveSetPoint = 24;
+        double speedIncrement = abs(mainGyro.GetAngle())*0.025;
+
+        intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
+
+        intake.intakeMotor.Set(Constant::intakePercentSpeed);
+        intake.indexMotorR.Set(Constant::intakePercentSpeed);
+        intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+        
+        if (positionLeft < driveSetPoint || positionRight < driveSetPoint) {
+          if (mainGyro.GetAngle() > Constant::autoStraightDeadzone) { // Too Far Right
+            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -(Constant::autoDriveSpeed + speedIncrement));
+          } else if (mainGyro.GetAngle() < -Constant::autoStraightDeadzone) { // Too Far Left
+            driveTrain.differentialDrive.TankDrive(-(Constant::autoDriveSpeed + speedIncrement), -Constant::autoDriveSpeed);
+          } else { // Just Right
+            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed);
+          }
+        } else {
+          driveTrain.differentialDrive.TankDrive(0, 0);
+
+          intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+          intake.intakeMotor.Set(0);
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
+          mainGyro.Reset();
+
+          autoPhase1Complete = true;
+        }
+      } 
+
+      /*
+        Auto Phase 2
+        Runs intake motor and index motors.
+        Pulls ball in.
+      */
+      if (autoPhase1Complete && !autoPhase2Complete) {
+        autoPhase2Timer = autoPhase2Timer + 20;
+
+        if (autoPhase2Timer < 600) {
+          intake.intakeMotor.Set(Constant::intakePercentSpeed);
+          intake.indexMotorR.Set(Constant::intakePercentSpeed);
+          intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+        } else {
+          intake.intakeMotor.Set(0);
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
+          mainGyro.Reset();
+
+          autoPhase2Complete = true;
+        }
+      }
+
+      /*
+        Auto Phase 3
+        Runs index motors.
+        Indexes ball further.
+      */
+      if (autoPhase2Complete && !autoPhase3Complete) {
+        autoPhase3Timer = autoPhase3Timer + 20;
+
+        if (autoPhase3Timer < 100) {
+          intake.indexMotorR.Set(-Constant::intakePercentSpeed);
+          intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+        } else {
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
+
+          driveTrain.leftDriveEncoder.SetPosition(0);
+          driveTrain.rightDriveEncoder.SetPosition(0);
+          mainGyro.Reset();
+
+          autoPhase3Complete = true;
+        }
+      }
+
+      /*
+        Auto Phase 4
+        Turns robot X degrees to the right.
+        Turns robot towards goal.
+      */
+      if (autoPhase3Complete && !autoPhase4Complete) {
+        double degrees = 179; // Why do we die
+
+        if (mainGyro.GetAngle() < degrees) {
+          driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
+        } else {
+          driveTrain.differentialDrive.TankDrive(0, 0);
+          autoPhase4Complete = true;
+          autoPhase5Complete = true;
+          mainGyro.Reset();
+        }
+      }
+
+      /*
+        Auto Phase 5
+        Turns to focus limelight.
+        DISABLED
+      */
+      if (autoPhase4Complete && !autoPhase5Complete) {
+        if (limelight.targetFound == 1) {
+            if (limelight.targetOffsetHorizontal < -5) {
+                driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
+            } else if (limelight.targetOffsetHorizontal > 5) {
+                driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
+            } else {
+              driveTrain.differentialDrive.TankDrive(0, 0);
+
+              autoPhase5Complete = true;
+            }
+        } else {
+          driveTrain.differentialDrive.TankDrive(0, 0);
+          mainGyro.Reset();
+
+          autoPhase5Complete = true;
+        }
+      }
+
+      /*
+        Auto Phase 6
+        Shoots ball at X RPM.
+        Shoot two balls into the goal.
+      */
+      if (autoPhase5Complete && !autoPhase6Complete) {
+        autoPhase6Timer = autoPhase6Timer + 20;
+
+        if (autoPhase6Timer < 1000) {
+          double shooterRPM = 323;
+          double targetVelocity = Constant::auto4BallFlywheelSpeed * 4096 / 600;
+
+          shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
+          shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
+        } else if (autoPhase6Timer < 3000) {
+          intake.indexMotorR.Set(Constant::intakePercentSpeed);
+          intake.indexMotorL.Set(Constant::intakePercentSpeed);
+        } else {
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
+          shooter.shooterMotorL.Set(ControlMode::PercentOutput, 0);
+          shooter.shooterMotorR.Set(ControlMode::PercentOutput, 0);
+
+          driveTrain.leftDriveEncoder.SetPosition(0);
+          driveTrain.rightDriveEncoder.SetPosition(0);
+          mainGyro.Reset();
+
+          autoPhase6Complete = true;
+        }
+      }
+      
+      /*
+        Auto Phase 7
+        Turns robot X degrees to the left.
+        Turns robot towards second ball.
+      */
+      if (autoPhase6Complete && !autoPhase7Complete) {
+        double degrees = -65; // Why do we die
+
+        if (mainGyro.GetAngle() > degrees) {
+          driveTrain.differentialDrive.TankDrive(Constant::autoTurnSpeed, -Constant::autoTurnSpeed);
+        } else {
+          driveTrain.differentialDrive.TankDrive(0, 0);
+          mainGyro.Reset();
+          autoPhase7Complete = true;
+        }
+        
+      }
+      
+      /*
+        Auto Phase 8
+        Moves robot forward to a set point.
+        Moves towards second ball.
+      */
+      if (autoPhase7Complete && !autoPhase8Complete) {
+        double driveSetPoint = 57.1;
+        double speedIncrement = abs(mainGyro.GetAngle())*0.015;
+
+        intake.intakeSolenoid.Set(intake.intakeSolenoid.kForward);
+
+        intake.intakeMotor.Set(Constant::intakePercentSpeed);
+        intake.indexMotorR.Set(Constant::intakePercentSpeed);
+        intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+        
+        if (positionLeft < driveSetPoint || positionRight < driveSetPoint) {
+          if (mainGyro.GetAngle() > Constant::autoStraightDeadzone) { // Too Far Right
+            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -(Constant::autoDriveSpeed + speedIncrement));
+          } else if (mainGyro.GetAngle() < -Constant::autoStraightDeadzone) { // Too Far Left
+            driveTrain.differentialDrive.TankDrive(-(Constant::autoDriveSpeed + speedIncrement), -Constant::autoDriveSpeed);
+          } else { // Just Right
+            driveTrain.differentialDrive.TankDrive(-Constant::autoDriveSpeed, -Constant::autoDriveSpeed);
+          }
+        } else {
+          driveTrain.differentialDrive.TankDrive(0, 0);
+          
+          intake.intakeSolenoid.Set(intake.intakeSolenoid.kReverse);
+          intake.intakeMotor.Set(0);
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
+          
+          driveTrain.leftDriveEncoder.SetPosition(0);
+          driveTrain.rightDriveEncoder.SetPosition(0);
+
+          autoPhase8Complete = true;
+        }
+      }
+
+      /*
+        Auto Phase 9
+        Runs index motors.
+        Indexes ball further.
+      */
+      if (autoPhase8Complete && !autoPhase9Complete) {
+        autoPhase3Timer = autoPhase3Timer + 20;
+
+        if (autoPhase3Timer < 100) {
+          intake.indexMotorR.Set(-Constant::intakePercentSpeed);
+          intake.indexMotorL.Set(-Constant::intakePercentSpeed);
+        } else {
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
+
+          driveTrain.leftDriveEncoder.SetPosition(0);
+          driveTrain.rightDriveEncoder.SetPosition(0);
+          mainGyro.Reset();
+
+          autoPhase9Complete = true;
+        }
+      }
+
+      /*
+        Auto Phase 10
+        Turns robot X degrees to the right.
+        Turns robot towards goal.
+      */
+      if (autoPhase9Complete && !autoPhase10Complete) { //Phase 9
+        double degrees = 98; // Why do we die
+
+        if (mainGyro.GetAngle() < degrees) {
+          driveTrain.differentialDrive.TankDrive(-Constant::autoTurnSpeed, Constant::autoTurnSpeed);
+        } else {
+          driveTrain.differentialDrive.TankDrive(0, 0);
+          autoPhase10Complete = true;
+          mainGyro.Reset();
+        }
+      }
+
+      /*
+        Auto Phase 11
+        Shoots ball at X RPM.
+        Shoot one ball into the goal.
+      */
+      if (autoPhase10Complete && !autoPhase11Complete) {
+        autoPhase11Timer = autoPhase11Timer + 20;
+
+        if (autoPhase11Timer < 1000) {
+          double shooterRPM = 328;
+          double targetVelocity = Constant::auto4BallFlywheelSpeed * 4096 / 600;
+
+          shooter.shooterMotorL.Set(ControlMode::Velocity, targetVelocity);
+          shooter.shooterMotorR.Set(ControlMode::Velocity, targetVelocity);
+        } else if (autoPhase11Timer < 3000) {
+          intake.indexMotorR.Set(Constant::intakePercentSpeed);
+          intake.indexMotorL.Set(Constant::intakePercentSpeed);
+        } else {
+          intake.indexMotorR.Set(0);
+          intake.indexMotorL.Set(0);
+          shooter.shooterMotorL.Set(ControlMode::PercentOutput, 0);
+          shooter.shooterMotorR.Set(ControlMode::PercentOutput, 0);
+
+          driveTrain.leftDriveEncoder.SetPosition(0);
+          driveTrain.rightDriveEncoder.SetPosition(0);
+
+          autoPhase11Complete = true;
+        }
+      }
+
+      // Autonomous Complete
+      if (autoPhase11Complete) {
+        driveTrain.differentialDrive.TankDrive(0, 0);
+      }
+    }
+
     void ResetAutonomous() {
       autoPhase1Complete = false;
       autoPhase2Complete = false;
@@ -928,10 +1258,13 @@ class Robot : public frc::TimedRobot {
       autoPhase7Timer = 0.0;
       autoPhase9Timer = 0.0;
       autoPhase10Timer = 0.0;
+      autoPhase11Timer = 0.0;
       autoPhase13Timer = 0.0;
 
       driveTrain.leftDriveEncoder.SetPosition(0);
       driveTrain.rightDriveEncoder.SetPosition(0);
+
+      mainGyro.Reset();
     }
 };
 
