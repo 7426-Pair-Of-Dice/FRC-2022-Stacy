@@ -4,16 +4,23 @@
 
 class Constant {
     public: 
-        static constexpr double intakePercentSpeed = 0.5;
+
+        static constexpr double autoSpeeds[4][2] = {
+            // {driveSpeed, turnSpeed}
+            {0.66, 0.42}, // 2 ball
+            {0.66, 0.42}, // 3 ball
+            {0.90, 0.54}, // 4 ball-H
+            {1, 0.5}      // 4 ball-R
+        };
+
+        static constexpr double intakePercentSpeed = 0.6;
         static constexpr double climbPercentSpeed = 1;
         static constexpr double openLoopRampRate = 0.85;
         static constexpr double flywheelTopGoalSpeed = 305;
         static constexpr double flywheelBottomGoalSpeed = 128;
-
-        static constexpr double autoDriveSpeed = 0.6; // Originally 0.55, just in case you're wondering why your previous Autonomous is faster.
-        static constexpr double autoStraightDeadzone = 0.5; // Originally 0.55, just in case you're wondering why your previous Autonomous is faster.
-        static constexpr double autoTurnSpeed = 0.40;
+        static constexpr double autoStraightDeadzone = 2;
         static constexpr double autoStraight = 0.08;
+        static constexpr double autoStraightPConstant = 0.001;
 
         static constexpr double auto2BallFlywheelSpeed = 305;
         static constexpr double auto4BallFlywheelSpeed = 309;

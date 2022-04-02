@@ -36,7 +36,7 @@ double LimeLight::GetFlywheelSpeedFromDistance() {
     double distance = GetDistanceFromTarget();
 
     if (this->targetFound == 1) {
-        return 2.85635 * distance + 147.214;
+        return 2.45 * distance + 147.214;
     } else {
         return 320;
     }

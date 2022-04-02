@@ -16,21 +16,35 @@ void Drivetrain::Teleop(Drivetrain &driveTrain, Input &input, LimeLight &limelig
     double leftY = input.xboxController.GetLeftY();
     double rightY = -input.xboxController.GetRightX();
 
+    //double p = -(0 - limelight.targetOffsetHorizontal) * 0.025;
+    //double p = absolute(limelight.targetOffsetHorizontal) * 0.08;
+    double speed = 0.25;
+    //double rotation = speed;
+
     if (input.xboxController.GetRightTriggerAxis() > 0) {
-       if (limelight.targetFound == 1) {
-            if (limelight.targetOffsetHorizontal < -5) {
-                driveTrain.differentialDrive.TankDrive(0.35, -0.35);
-            } else if (limelight.targetOffsetHorizontal > 5) { 
-                driveTrain.differentialDrive.TankDrive(-0.35, 0.35);
+        
+        //driveTrain.differentialDrive.ArcadeDrive(0, rotation);
+        
+        if (limelight.targetFound == 1) {
+            if (limelight.targetOffsetHorizontal < -2) {
+                driveTrain.differentialDrive.TankDrive(speed, -speed);
+            } else if (limelight.targetOffsetHorizontal > 2) { 
+                driveTrain.differentialDrive.TankDrive(-speed, speed);
             } else {
                 driveTrain.differentialDrive.TankDrive(0, 0);
             }
         } 
+        
     } else if (input.xboxController.GetLeftTriggerAxis() > 0) {
         differentialDrive.ArcadeDrive(leftY * 0.5, rightY);
     } else {
         differentialDrive.ArcadeDrive(leftY, rightY);
     }
+}
+
+double Drivetrain::absolute(double x) {
+    if (x < 0) return x * -1;
+    if (x > 0) return x;
 }
 
 void Drivetrain::Disable() {

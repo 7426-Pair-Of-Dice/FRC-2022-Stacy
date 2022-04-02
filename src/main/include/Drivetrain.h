@@ -35,5 +35,6 @@ class Drivetrain {
         void Init(Drivetrain &driveTrain);
         void Teleop(Drivetrain &driveTrain, Input &input, LimeLight &limelight);
         bool InDeadzone(double input);
+        double absolute(double x);
         void Disable();
 };
